@@ -18,8 +18,8 @@ from app.pipelines._types import PipelineResult
 
 logger = logging.getLogger("rena.eval")
 
-_CHUNK_PREVIEW = 300   # chars per chunk shown to Haiku
-_MAX_EVAL_CHUNKS = 6   # cap to keep prompt small
+_CHUNK_PREVIEW = 600   # match context_assembler.CHUNK_PREVIEW so scorer sees what Sonnet saw
+_MAX_EVAL_CHUNKS = 8   # match context_assembler.MAX_CHUNKS
 
 
 # ---------------------------------------------------------------------------
