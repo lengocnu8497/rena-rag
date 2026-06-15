@@ -8,7 +8,7 @@ Vector search is done via RPC functions defined in the DB migration
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from supabase import AsyncClient, acreate_client
 
@@ -54,7 +54,7 @@ async def get_user_profile(user_id: str) -> dict[str, Any] | None:
         .maybe_single()
         .execute()
     )
-    return result.data if result is not None else None
+    return cast(dict[str, Any] | None, result.data if result is not None else None)
 
 
 async def get_journal_entries(user_id: str, limit: int = 5) -> list[dict[str, Any]]:
@@ -70,7 +70,7 @@ async def get_journal_entries(user_id: str, limit: int = 5) -> list[dict[str, An
         .limit(limit)
         .execute()
     )
-    return result.data or []
+    return cast(list[dict[str, Any]], result.data or [])
 
 
 async def get_recovery_plan(user_id: str) -> dict[str, Any] | None:
@@ -88,7 +88,7 @@ async def get_recovery_plan(user_id: str) -> dict[str, Any] | None:
         .maybe_single()
         .execute()
     )
-    return result.data if result is not None else None
+    return cast(dict[str, Any] | None, result.data if result is not None else None)
 
 
 async def get_all_procedures() -> list[dict[str, Any]]:
@@ -104,7 +104,7 @@ async def get_all_procedures() -> list[dict[str, Any]]:
         .order("sort_order", desc=False)
         .execute()
     )
-    return result.data or []
+    return cast(list[dict[str, Any]], result.data or [])
 
 
 # ---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ async def vector_search_chunks(
             "min_similarity": min_score,
         },
     ).execute()
-    return result.data or []
+    return cast(list[dict[str, Any]], result.data or [])
 
 
 async def vector_search_memory(
@@ -171,7 +171,7 @@ async def vector_search_memory(
             "match_count": top_k,
         },
     ).execute()
-    return result.data or []
+    return cast(list[dict[str, Any]], result.data or [])
 
 
 # ---------------------------------------------------------------------------
