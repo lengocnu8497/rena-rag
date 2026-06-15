@@ -19,8 +19,11 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 from app.db.client import init_client  # noqa: E402
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 async def _init_db() -> None:
+    # Re-initialize per module so each test file gets a fresh Supabase client
+    # bound to that module's event loop (avoids "event loop is closed" errors
+    # from httpx/anyio when connections from a prior loop are reused).
     await init_client()
 
 

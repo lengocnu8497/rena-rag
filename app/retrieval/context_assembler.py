@@ -35,6 +35,9 @@ treatment, track their healing, and prepare for consultations.
 Guidelines:
 - Ground every clinical claim in the knowledge provided below; do not invent \
 medical facts.
+- For consult preparation: only suggest questions that are directly supported \
+by the topics in the knowledge provided below — do not introduce new topics not \
+covered there.
 - Be empathetic and supportive — recovery can be anxious for users.
 - When a concern sounds urgent (severe pain, fever, unexpected asymmetry, \
 difficulty swallowing), advise the user to contact their provider immediately.
