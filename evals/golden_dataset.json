@@ -1,0 +1,272 @@
+[
+  {
+    "id": "R-001",
+    "category": "recovery",
+    "procedure": "rhinoplasty",
+    "procedure_tag": "rhinoplasty",
+    "query": "I'm 5 days post-rhinoplasty and have purple bruising under my eyes. Is this normal?",
+    "expected_sources": ["what_is_normal", "what_to_watch_for"],
+    "should_block": false
+  },
+  {
+    "id": "R-002",
+    "category": "recovery",
+    "procedure": "lip filler",
+    "procedure_tag": "lip filler",
+    "query": "I got lip filler yesterday and my lips are extremely swollen and lumpy. Should I be worried?",
+    "expected_sources": ["what_is_normal", "what_to_watch_for"],
+    "should_block": false
+  },
+  {
+    "id": "R-003",
+    "category": "recovery",
+    "procedure": "botox",
+    "procedure_tag": "botox / dysport",
+    "query": "It's been 24 hours since my botox and I have a mild headache. Is that expected?",
+    "expected_sources": ["what_is_normal"],
+    "should_block": false
+  },
+  {
+    "id": "R-004",
+    "category": "recovery",
+    "procedure": "brazilian butt lift",
+    "procedure_tag": "brazilian butt lift",
+    "query": "How long after a BBL do I have to avoid sitting directly on my butt?",
+    "expected_sources": ["recovery_overview", "what_is_normal"],
+    "should_block": false
+  },
+  {
+    "id": "R-005",
+    "category": "recovery",
+    "procedure": "breast augmentation",
+    "procedure_tag": "breast augmentation",
+    "query": "One week after breast augmentation my chest feels really tight and it hurts to lift my arms. Is this normal?",
+    "expected_sources": ["what_is_normal", "recovery_overview"],
+    "should_block": false
+  },
+  {
+    "id": "R-006",
+    "category": "recovery",
+    "procedure": "chemical peel",
+    "procedure_tag": "chemical peel",
+    "query": "My skin is really flaking and peeling on day 3 after a medium chemical peel. Is this supposed to happen?",
+    "expected_sources": ["what_is_normal"],
+    "should_block": false
+  },
+  {
+    "id": "R-007",
+    "category": "recovery",
+    "procedure": "microneedling",
+    "procedure_tag": "microneedling",
+    "query": "My face is still quite red and looks sunburned 48 hours after microneedling. When does redness go away?",
+    "expected_sources": ["what_is_normal", "recovery_overview"],
+    "should_block": false
+  },
+  {
+    "id": "R-008",
+    "category": "recovery",
+    "procedure": "facelift",
+    "procedure_tag": "facelift",
+    "query": "Two weeks after my facelift I still have some facial numbness around my ears. Is that typical?",
+    "expected_sources": ["what_is_normal", "what_to_watch_for"],
+    "should_block": false
+  },
+  {
+    "id": "R-009",
+    "category": "recovery",
+    "procedure": "liposuction",
+    "procedure_tag": "liposuction",
+    "query": "My swelling after liposuction seems to be getting worse in week 2 — I thought it would be better by now?",
+    "expected_sources": ["what_is_normal", "recovery_overview"],
+    "should_block": false
+  },
+  {
+    "id": "R-010",
+    "category": "recovery",
+    "procedure": "tummy tuck",
+    "procedure_tag": "tummy tuck",
+    "query": "How do I take care of the drains after a tummy tuck and when do they usually come out?",
+    "expected_sources": ["recovery_overview", "what_is_normal"],
+    "should_block": false
+  },
+  {
+    "id": "C-001",
+    "category": "consult_prep",
+    "procedure": "rhinoplasty",
+    "procedure_tag": "rhinoplasty",
+    "query": "What questions should I ask my surgeon at my rhinoplasty consultation?",
+    "expected_sources": ["consult_questions", "who_its_for"],
+    "should_block": false
+  },
+  {
+    "id": "C-002",
+    "category": "consult_prep",
+    "procedure": "lip filler",
+    "procedure_tag": "lip filler",
+    "query": "Am I a good candidate for lip filler? What should I discuss with the injector beforehand?",
+    "expected_sources": ["who_its_for", "consult_questions"],
+    "should_block": false
+  },
+  {
+    "id": "C-003",
+    "category": "consult_prep",
+    "procedure": "breast augmentation",
+    "procedure_tag": "breast augmentation",
+    "query": "What are the most important questions to ask about implant type and size before breast augmentation?",
+    "expected_sources": ["consult_questions", "description"],
+    "should_block": false
+  },
+  {
+    "id": "C-004",
+    "category": "consult_prep",
+    "procedure": "botox",
+    "procedure_tag": "botox / dysport",
+    "query": "It's my first botox appointment — what should I tell my injector and what should I ask?",
+    "expected_sources": ["consult_questions", "who_its_for"],
+    "should_block": false
+  },
+  {
+    "id": "C-005",
+    "category": "consult_prep",
+    "procedure": "tummy tuck",
+    "procedure_tag": "tummy tuck",
+    "query": "How do I know if I'm a good candidate for a tummy tuck? What will the surgeon assess?",
+    "expected_sources": ["who_its_for", "consult_questions"],
+    "should_block": false
+  },
+  {
+    "id": "C-006",
+    "category": "consult_prep",
+    "procedure": "coolsculpting",
+    "procedure_tag": "coolsculpting",
+    "query": "What makes someone a good candidate for CoolSculpting and what questions should I ask at my consultation?",
+    "expected_sources": ["who_its_for", "consult_questions"],
+    "should_block": false
+  },
+  {
+    "id": "C-007",
+    "category": "consult_prep",
+    "procedure": "blepharoplasty",
+    "procedure_tag": "blepharoplasty",
+    "query": "I'm considering eyelid surgery — what should I ask at my blepharoplasty consultation?",
+    "expected_sources": ["consult_questions", "who_its_for"],
+    "should_block": false
+  },
+  {
+    "id": "C-008",
+    "category": "consult_prep",
+    "procedure": "laser resurfacing",
+    "procedure_tag": "laser resurfacing",
+    "query": "What should I discuss with my provider about my skin type before laser resurfacing?",
+    "expected_sources": ["who_its_for", "consult_questions"],
+    "should_block": false
+  },
+  {
+    "id": "C-009",
+    "category": "consult_prep",
+    "procedure": "pdo thread lift",
+    "procedure_tag": "pdo thread lift",
+    "query": "What questions should I ask about how long PDO thread lift results last?",
+    "expected_sources": ["consult_questions", "description"],
+    "should_block": false
+  },
+  {
+    "id": "C-010",
+    "category": "consult_prep",
+    "procedure": "under eye filler",
+    "procedure_tag": "under eye filler",
+    "query": "What should I prepare to discuss with my injector before under-eye filler?",
+    "expected_sources": ["consult_questions", "who_its_for"],
+    "should_block": false
+  },
+  {
+    "id": "X-001",
+    "category": "comparison",
+    "procedure": "breast augmentation vs breast lift",
+    "procedure_tag": null,
+    "query": "What's the difference between a breast augmentation and a breast lift? Which one would be right for me?",
+    "expected_sources": ["description", "who_its_for"],
+    "should_block": false
+  },
+  {
+    "id": "X-002",
+    "category": "comparison",
+    "procedure": "coolsculpting vs emsculpt",
+    "procedure_tag": null,
+    "query": "Should I get CoolSculpting or Emsculpt for belly fat? What's the difference?",
+    "expected_sources": ["description", "who_its_for"],
+    "should_block": false
+  },
+  {
+    "id": "X-003",
+    "category": "comparison",
+    "procedure": "botox vs filler",
+    "procedure_tag": null,
+    "query": "What's the difference between Botox and dermal fillers for forehead lines?",
+    "expected_sources": ["description"],
+    "should_block": false
+  },
+  {
+    "id": "X-004",
+    "category": "comparison",
+    "procedure": "chemical peel vs laser resurfacing",
+    "procedure_tag": null,
+    "query": "Which is better for uneven skin texture — a chemical peel or laser resurfacing?",
+    "expected_sources": ["description", "who_its_for"],
+    "should_block": false
+  },
+  {
+    "id": "X-005",
+    "category": "comparison",
+    "procedure": "ultherapy vs pdo thread lift",
+    "procedure_tag": null,
+    "query": "I want to lift my face without surgery. How does Ultherapy compare to PDO thread lift?",
+    "expected_sources": ["description", "who_its_for"],
+    "should_block": false
+  },
+  {
+    "id": "OT-001",
+    "category": "scope_gate",
+    "procedure": null,
+    "procedure_tag": null,
+    "query": "What tech stocks should I invest in this year?",
+    "expected_sources": [],
+    "should_block": true
+  },
+  {
+    "id": "OT-002",
+    "category": "scope_gate",
+    "procedure": null,
+    "procedure_tag": null,
+    "query": "Can you write me a cover letter for a marketing job?",
+    "expected_sources": [],
+    "should_block": true
+  },
+  {
+    "id": "OT-003",
+    "category": "scope_gate",
+    "procedure": null,
+    "procedure_tag": null,
+    "query": "What's the weather going to be like in Miami this weekend?",
+    "expected_sources": [],
+    "should_block": true
+  },
+  {
+    "id": "OT-004",
+    "category": "scope_gate",
+    "procedure": null,
+    "procedure_tag": null,
+    "query": "Give me a recipe for a really good pasta carbonara.",
+    "expected_sources": [],
+    "should_block": true
+  },
+  {
+    "id": "OT-005",
+    "category": "scope_gate",
+    "procedure": null,
+    "procedure_tag": null,
+    "query": "I'm feeling really anxious about a fight I had with my partner. What should I do?",
+    "expected_sources": [],
+    "should_block": true
+  }
+]

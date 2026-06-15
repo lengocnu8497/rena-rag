@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Rena RAG — S3 bucket for medical PDF document storage
+
+Resources:
+
+  DocumentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub rena-knowledge-base-${AWS::AccountId}
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ArchiveOldVersions
+            Status: Enabled
+            NoncurrentVersionTransitions:
+              - TransitionInDays: 365
+                StorageClass: GLACIER
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: Project
+          Value: rena-rag
+
+Outputs:
+  DocumentBucketName:
+    Value: !Ref DocumentBucket
+    Export:
+      Name: rena-rag-DocumentBucket
+
+  DocumentBucketArn:
+    Value: !GetAtt DocumentBucket.Arn
+    Export:
+      Name: rena-rag-DocumentBucketArn

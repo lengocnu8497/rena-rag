@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Rena RAG — S3 + CloudFront hosting for the React eval dashboard
+
+Resources:
+
+  # ── S3 Bucket (private — CloudFront serves content via OAC) ───────────────
+
+  DashboardBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub rena-rag-dashboard-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: rena-rag
+
+  # ── Origin Access Control (replaces legacy OAI) ────────────────────────────
+
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: rena-rag-dashboard-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ── Bucket Policy (allows CloudFront OAC only) ─────────────────────────────
+
+  DashboardBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DashboardBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub '${DashboardBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub
+                  - 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${DistId}'
+                  - DistId: !Ref Distribution
+
+  # ── CloudFront Distribution ────────────────────────────────────────────────
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: Rena RAG eval dashboard
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt DashboardBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt OriginAccessControl.Id
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6   # CachingOptimized managed policy
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf  # CORS-S3Origin managed policy
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+        # Redirect 403/404 back to index.html for SPA client-side routing
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 404
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+            ErrorCachingMinTTL: 0
+        HttpVersion: http2and3
+      Tags:
+        - Key: Project
+          Value: rena-rag
+
+Outputs:
+  DashboardUrl:
+    Value: !Sub 'https://${Distribution.DomainName}'
+    Export:
+      Name: rena-rag-DashboardUrl
+
+  DashboardBucketName:
+    Value: !Ref DashboardBucket
+    Export:
+      Name: rena-rag-DashboardBucket
+
+  CloudFrontDistributionId:
+    Value: !Ref Distribution
+    Export:
+      Name: rena-rag-CloudFrontDistributionId

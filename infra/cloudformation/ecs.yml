@@ -1,0 +1,421 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Rena RAG — ECS Fargate cluster, service, ALB, IAM roles, auto-scaling, and alarms
+
+Parameters:
+
+  ImageUri:
+    Type: String
+    Description: Full ECR image URI including tag, e.g. 123456789.dkr.ecr.us-east-1.amazonaws.com/rena-rag:abc1234
+
+  AnthropicApiKeySecretArn:
+    Type: String
+    Description: ARN of Secrets Manager secret containing the Anthropic API key
+
+  OpenAiApiKeySecretArn:
+    Type: String
+    Description: ARN of Secrets Manager secret containing the OpenAI API key
+
+  SupabaseUrlSecretArn:
+    Type: String
+    Description: ARN of Secrets Manager secret containing the Supabase project URL
+
+  SupabaseServiceRoleKeySecretArn:
+    Type: String
+    Description: ARN of Secrets Manager secret containing the Supabase service role key
+
+  CertificateArn:
+    Type: String
+    Default: ''
+    Description: ACM certificate ARN for HTTPS. Leave empty to use HTTP on port 80 only.
+
+  AlarmEmail:
+    Type: String
+    Default: ''
+    Description: Email address for CloudWatch alarm notifications (optional)
+
+Conditions:
+  HasCertificate: !Not [!Equals [!Ref CertificateArn, '']]
+  HasAlarmEmail: !Not [!Equals [!Ref AlarmEmail, '']]
+
+Resources:
+
+  # ── CloudWatch Log Group ────────────────────────────────────────────────────
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/rena-rag
+      RetentionInDays: 30
+
+  # ── IAM: ECS Execution Role (control plane — pull image, inject secrets) ───
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: rena-rag-execution-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: SecretsAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource:
+                  - !Ref AnthropicApiKeySecretArn
+                  - !Ref OpenAiApiKeySecretArn
+                  - !Ref SupabaseUrlSecretArn
+                  - !Ref SupabaseServiceRoleKeySecretArn
+
+  # ── IAM: ECS Task Role (runtime app permissions) ───────────────────────────
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: rena-rag-task-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: S3DocumentAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub
+                  - '${BucketArn}/*'
+                  - BucketArn: !ImportValue rena-rag-DocumentBucketArn
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !ImportValue rena-rag-DocumentBucketArn
+        - PolicyName: CloudWatchMetrics
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: cloudwatch:PutMetricData
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    cloudwatch:namespace: RenaRAG
+
+  # ── ALB ────────────────────────────────────────────────────────────────────
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: rena-rag-alb
+      Scheme: internet-facing
+      Type: application
+      Subnets:
+        - !ImportValue rena-rag-PublicSubnet1
+        - !ImportValue rena-rag-PublicSubnet2
+      SecurityGroups:
+        - !ImportValue rena-rag-AlbSecurityGroup
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: rena-rag-tg
+      Protocol: HTTP
+      Port: 8000
+      TargetType: ip
+      VpcId: !ImportValue rena-rag-VpcId
+      HealthCheckPath: /health
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '30'
+
+  # HTTP listener: forward when no cert; redirect to HTTPS when cert present
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions: !If
+        - HasCertificate
+        - - Type: redirect
+            RedirectConfig:
+              Protocol: HTTPS
+              Port: '443'
+              StatusCode: HTTP_301
+        - - Type: forward
+            TargetGroupArn: !Ref TargetGroup
+
+  HttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Condition: HasCertificate
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+  # ── ECS Cluster ────────────────────────────────────────────────────────────
+
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: rena-rag-cluster
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  # ── ECS Task Definition ────────────────────────────────────────────────────
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: rena-rag
+      Cpu: '512'
+      Memory: '1024'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: rena-rag
+          Image: !Ref ImageUri
+          PortMappings:
+            - ContainerPort: 8000
+              Protocol: tcp
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ENVIRONMENT
+              Value: production
+            - Name: LOG_LEVEL
+              Value: INFO
+            - Name: DOCUMENT_BUCKET
+              Value: !ImportValue rena-rag-DocumentBucket
+          Secrets:
+            - Name: ANTHROPIC_API_KEY
+              ValueFrom: !Ref AnthropicApiKeySecretArn
+            - Name: OPENAI_API_KEY
+              ValueFrom: !Ref OpenAiApiKeySecretArn
+            - Name: SUPABASE_URL
+              ValueFrom: !Ref SupabaseUrlSecretArn
+            - Name: SUPABASE_SERVICE_ROLE_KEY
+              ValueFrom: !Ref SupabaseServiceRoleKeySecretArn
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: /ecs/rena-rag
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - curl -f http://localhost:8000/health || exit 1
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+          Essential: true
+
+  # ── ECS Service ────────────────────────────────────────────────────────────
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - HttpListener
+    Properties:
+      ServiceName: rena-rag-service
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref TaskDefinition
+      LaunchType: FARGATE
+      DesiredCount: 2
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 100
+        MaximumPercent: 200
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !ImportValue rena-rag-PrivateSubnet1
+            - !ImportValue rena-rag-PrivateSubnet2
+          SecurityGroups:
+            - !ImportValue rena-rag-EcsSecurityGroup
+          AssignPublicIp: DISABLED
+      LoadBalancers:
+        - ContainerName: rena-rag
+          ContainerPort: 8000
+          TargetGroupArn: !Ref TargetGroup
+      HealthCheckGracePeriodSeconds: 60
+
+  # ── Auto Scaling ────────────────────────────────────────────────────────────
+
+  AutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: rena-rag-autoscaling-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: application-autoscaling.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole
+
+  ScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MinCapacity: 1
+      MaxCapacity: 10
+      ResourceId: !Sub service/${Cluster}/${Service.Name}
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      RoleARN: !GetAtt AutoScalingRole.Arn
+
+  ScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: rena-rag-cpu-scaling
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref ScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 70.0
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 60
+
+  # ── SNS Alarm Topic ────────────────────────────────────────────────────────
+
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: rena-rag-alarms
+
+  AlarmEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasAlarmEmail
+    Properties:
+      TopicArn: !Ref AlarmTopic
+      Protocol: email
+      Endpoint: !Ref AlarmEmail
+
+  # ── CloudWatch Alarms ──────────────────────────────────────────────────────
+
+  LatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: rena-rag-p95-latency
+      AlarmDescription: ALB P95 response time exceeded 5 seconds
+      Namespace: AWS/ApplicationELB
+      MetricName: TargetResponseTime
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !GetAtt LoadBalancer.LoadBalancerFullName
+      ExtendedStatistic: p95
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmTopic
+
+  ErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: rena-rag-5xx-rate
+      AlarmDescription: ALB 5xx error count exceeded threshold
+      Namespace: AWS/ApplicationELB
+      MetricName: HTTPCode_Target_5XX_Count
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !GetAtt LoadBalancer.LoadBalancerFullName
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmTopic
+
+  FaithfulnessAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: rena-rag-faithfulness-low
+      AlarmDescription: Mean faithfulness score dropped below 0.75 over 1 hour
+      Namespace: RenaRAG
+      MetricName: FaithfulnessScore
+      Statistic: Average
+      Period: 3600
+      EvaluationPeriods: 1
+      Threshold: 0.75
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmTopic
+
+  DailyCostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: rena-rag-daily-api-cost
+      AlarmDescription: Daily API cost (Anthropic + OpenAI) exceeded $50
+      Namespace: RenaRAG
+      MetricName: CostUsdPerRequest
+      Statistic: Sum
+      Period: 86400
+      EvaluationPeriods: 1
+      Threshold: 50
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmTopic
+
+Outputs:
+  AlbDns:
+    Value: !GetAtt LoadBalancer.DNSName
+    Description: ALB DNS name — use as RAG_SERVICE_URL in iOS app (prefix with http:// or https://)
+    Export:
+      Name: rena-rag-AlbDns
+
+  ClusterArn:
+    Value: !GetAtt Cluster.Arn
+    Export:
+      Name: rena-rag-ClusterArn
+
+  ServiceName:
+    Value: !GetAtt Service.Name
+    Export:
+      Name: rena-rag-ServiceName
+
+  TaskRoleArn:
+    Value: !GetAtt TaskRole.Arn
+    Export:
+      Name: rena-rag-TaskRoleArn

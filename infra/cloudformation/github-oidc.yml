@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Rena RAG — GitHub Actions OIDC provider + deploy role.
+  Deploy this stack once before running the CI/CD pipeline.
+  Set the resulting DeployRoleArn as the AWS_DEPLOY_ROLE_ARN GitHub secret.
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Description: GitHub organization or username (e.g. "acme-corp")
+
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name (e.g. "rena-rag")
+
+Resources:
+
+  # ── GitHub OIDC Provider ───────────────────────────────────────────────────
+  # Only one OIDC provider per URL is allowed per AWS account.
+  # If token.actions.githubusercontent.com already exists, skip this resource
+  # and pass its ARN directly to the role's trust policy.
+
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea
+
+  # ── Deploy Role ────────────────────────────────────────────────────────────
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: rena-rag-github-deploy
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !GetAtt GitHubOidcProvider.Arn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                # Only the main branch can deploy
+                token.actions.githubusercontent.com:sub:
+                  !Sub repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main
+      Policies:
+        - PolicyName: ECRPush
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+                  - ecr:PutImage
+                Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/rena-rag
+
+        - PolicyName: ECSDeployTaskDef
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecs:DescribeTaskDefinition
+                  - ecs:RegisterTaskDefinition
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - ecs:DescribeServices
+                  - ecs:UpdateService
+                Resource:
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/rena-rag-cluster
+                  - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:service/rena-rag-cluster/rena-rag-service
+              # ECS needs to pass the task role + execution role when updating
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource:
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/rena-rag-task-role
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/rena-rag-execution-role
+
+        - PolicyName: DashboardDeploy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub arn:aws:s3:::rena-rag-dashboard-${AWS::AccountId}
+                  - !Sub arn:aws:s3:::rena-rag-dashboard-${AWS::AccountId}/*
+              - Effect: Allow
+                Action: cloudfront:CreateInvalidation
+                Resource: '*'
+
+        - PolicyName: CloudFormationExportsRead
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: cloudformation:ListExports
+                Resource: '*'
+
+Outputs:
+  DeployRoleArn:
+    Value: !GetAtt DeployRole.Arn
+    Description: Set this as the AWS_DEPLOY_ROLE_ARN secret in your GitHub repository

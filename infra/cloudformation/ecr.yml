@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Rena RAG — ECR repository for the FastAPI Docker image
+
+Resources:
+
+  Repository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: rena-rag
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 10 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": { "type": "expire" }
+              }
+            ]
+          }
+      Tags:
+        - Key: Project
+          Value: rena-rag
+
+Outputs:
+  RepositoryUri:
+    Value: !GetAtt Repository.RepositoryUri
+    Export:
+      Name: rena-rag-EcrUri
+
+  RepositoryArn:
+    Value: !GetAtt Repository.Arn
+    Export:
+      Name: rena-rag-EcrArn
