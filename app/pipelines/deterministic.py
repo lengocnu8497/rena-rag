@@ -62,6 +62,16 @@ async def run(
         source_type=route.source_type,
         top_k=top_k_retrieve,
     )
+    # When section-filtered retrieval is sparse, broaden to all sections so
+    # procedure content about the query topic isn't silently excluded.
+    if len(chunks) < 3 and route.sections:
+        chunks = await retrieve_chunks(
+            query=clean_query,
+            procedure_tags=route.procedure_tags or None,
+            sections=None,
+            source_type=route.source_type,
+            top_k=top_k_retrieve,
+        )
     ranked = await rerank(clean_query, chunks, top_k=top_k_rerank)
 
     # 3. Assemble context
