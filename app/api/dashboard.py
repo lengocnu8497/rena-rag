@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
+from typing import Any, cast
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -143,7 +143,7 @@ async def cost_summary(days: int = Query(30, ge=1, le=365)) -> dict[str, Any]:
                  "requests": 0, "mean_latency_ms": 0, "_latencies": []}
     )
 
-    for row in result.data or []:
+    for row in cast(list[dict[str, Any]], result.data or []):
         date = (row.get("created_at") or "")[:10]
         if not date:
             continue
@@ -189,7 +189,7 @@ async def chunk_stats() -> dict[str, Any]:
     by_section: Counter[str] = Counter()
     by_procedure: Counter[str] = Counter()
 
-    for row in result.data or []:
+    for row in cast(list[dict[str, Any]], result.data or []):
         by_source[row.get("source_type") or "unknown"] += 1
         by_section[row.get("section") or "unknown"] += 1
         for tag in row.get("procedure_tags") or []:

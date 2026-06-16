@@ -13,21 +13,14 @@ Parameters:
     Type: String
     Description: GitHub repository name (e.g. "rena-rag")
 
+  OidcProviderArn:
+    Type: String
+    Description: >
+      ARN of the existing GitHub OIDC provider in this account.
+      Find it in IAM → Identity providers → token.actions.githubusercontent.com → copy ARN.
+      Format: arn:aws:iam::<account-id>:oidc-provider/token.actions.githubusercontent.com
+
 Resources:
-
-  # ── GitHub OIDC Provider ───────────────────────────────────────────────────
-  # Only one OIDC provider per URL is allowed per AWS account.
-  # If token.actions.githubusercontent.com already exists, skip this resource
-  # and pass its ARN directly to the role's trust policy.
-
-  GitHubOidcProvider:
-    Type: AWS::IAM::OIDCProvider
-    Properties:
-      Url: https://token.actions.githubusercontent.com
-      ClientIdList:
-        - sts.amazonaws.com
-      ThumbprintList:
-        - 6938fd4d98bab03faadb97b34396831e3780aea
 
   # ── Deploy Role ────────────────────────────────────────────────────────────
 
@@ -40,7 +33,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Federated: !GetAtt GitHubOidcProvider.Arn
+              Federated: !Ref OidcProviderArn
             Action: sts:AssumeRoleWithWebIdentity
             Condition:
               StringEquals:

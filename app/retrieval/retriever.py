@@ -33,6 +33,7 @@ class ChunkResult:
     content: str
     metadata: dict[str, Any]
     similarity: float
+    evidence_grade: str | None = None
 
 
 @dataclass

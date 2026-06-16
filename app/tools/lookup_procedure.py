@@ -39,7 +39,7 @@ async def run(inputs: dict, user_id: str) -> ToolResult:
             .maybe_single()
             .execute()
         )
-        if not result.data:
+        if result is None or not result.data:
             return ToolResult(
                 content={"found": False, "name": name},
                 error=f"No procedure found matching '{name}'",

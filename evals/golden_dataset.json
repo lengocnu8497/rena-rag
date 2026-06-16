@@ -5,7 +5,10 @@
     "procedure": "rhinoplasty",
     "procedure_tag": "rhinoplasty",
     "query": "I'm 5 days post-rhinoplasty and have purple bruising under my eyes. Is this normal?",
-    "expected_sources": ["what_is_normal", "what_to_watch_for"],
+    "expected_sources": [
+      "what_is_normal",
+      "what_to_watch_for"
+    ],
     "should_block": false
   },
   {
@@ -14,7 +17,10 @@
     "procedure": "lip filler",
     "procedure_tag": "lip filler",
     "query": "I got lip filler yesterday and my lips are extremely swollen and lumpy. Should I be worried?",
-    "expected_sources": ["what_is_normal", "what_to_watch_for"],
+    "expected_sources": [
+      "what_is_normal",
+      "what_to_watch_for"
+    ],
     "should_block": false
   },
   {
@@ -23,7 +29,9 @@
     "procedure": "botox",
     "procedure_tag": "botox / dysport",
     "query": "It's been 24 hours since my botox and I have a mild headache. Is that expected?",
-    "expected_sources": ["what_is_normal"],
+    "expected_sources": [
+      "what_is_normal"
+    ],
     "should_block": false
   },
   {
@@ -32,7 +40,10 @@
     "procedure": "brazilian butt lift",
     "procedure_tag": "brazilian butt lift",
     "query": "How long after a BBL do I have to avoid sitting directly on my butt?",
-    "expected_sources": ["recovery_overview", "what_is_normal"],
+    "expected_sources": [
+      "recovery_overview",
+      "what_is_normal"
+    ],
     "should_block": false
   },
   {
@@ -41,7 +52,10 @@
     "procedure": "breast augmentation",
     "procedure_tag": "breast augmentation",
     "query": "One week after breast augmentation my chest feels really tight and it hurts to lift my arms. Is this normal?",
-    "expected_sources": ["what_is_normal", "recovery_overview"],
+    "expected_sources": [
+      "what_is_normal",
+      "recovery_overview"
+    ],
     "should_block": false
   },
   {
@@ -50,7 +64,9 @@
     "procedure": "chemical peel",
     "procedure_tag": "chemical peel",
     "query": "My skin is really flaking and peeling on day 3 after a medium chemical peel. Is this supposed to happen?",
-    "expected_sources": ["what_is_normal"],
+    "expected_sources": [
+      "what_is_normal"
+    ],
     "should_block": false
   },
   {
@@ -59,7 +75,10 @@
     "procedure": "microneedling",
     "procedure_tag": "microneedling",
     "query": "My face is still quite red and looks sunburned 48 hours after microneedling. When does redness go away?",
-    "expected_sources": ["what_is_normal", "recovery_overview"],
+    "expected_sources": [
+      "what_is_normal",
+      "recovery_overview"
+    ],
     "should_block": false
   },
   {
@@ -68,7 +87,10 @@
     "procedure": "facelift",
     "procedure_tag": "facelift",
     "query": "Two weeks after my facelift I still have some facial numbness around my ears. Is that typical?",
-    "expected_sources": ["what_is_normal", "what_to_watch_for"],
+    "expected_sources": [
+      "what_is_normal",
+      "what_to_watch_for"
+    ],
     "should_block": false
   },
   {
@@ -76,17 +98,11 @@
     "category": "recovery",
     "procedure": "liposuction",
     "procedure_tag": "liposuction",
-    "query": "My swelling after liposuction seems to be getting worse in week 2 — I thought it would be better by now?",
-    "expected_sources": ["what_is_normal", "recovery_overview"],
-    "should_block": false
-  },
-  {
-    "id": "R-010",
-    "category": "recovery",
-    "procedure": "tummy tuck",
-    "procedure_tag": "tummy tuck",
-    "query": "How do I take care of the drains after a tummy tuck and when do they usually come out?",
-    "expected_sources": ["recovery_overview", "what_is_normal"],
+    "query": "My swelling after liposuction seems to be getting worse in week 2 \u2014 I thought it would be better by now?",
+    "expected_sources": [
+      "what_is_normal",
+      "recovery_overview"
+    ],
     "should_block": false
   },
   {
@@ -95,7 +111,10 @@
     "procedure": "rhinoplasty",
     "procedure_tag": "rhinoplasty",
     "query": "What questions should I ask my surgeon at my rhinoplasty consultation?",
-    "expected_sources": ["consult_questions", "who_its_for"],
+    "expected_sources": [
+      "consult_questions",
+      "who_its_for"
+    ],
     "should_block": false
   },
   {
@@ -104,7 +123,10 @@
     "procedure": "lip filler",
     "procedure_tag": "lip filler",
     "query": "Am I a good candidate for lip filler? What should I discuss with the injector beforehand?",
-    "expected_sources": ["who_its_for", "consult_questions"],
+    "expected_sources": [
+      "who_its_for",
+      "consult_questions"
+    ],
     "should_block": false
   },
   {
@@ -113,7 +135,10 @@
     "procedure": "breast augmentation",
     "procedure_tag": "breast augmentation",
     "query": "What are the most important questions to ask about implant type and size before breast augmentation?",
-    "expected_sources": ["consult_questions", "description"],
+    "expected_sources": [
+      "consult_questions",
+      "description"
+    ],
     "should_block": false
   },
   {
@@ -121,8 +146,11 @@
     "category": "consult_prep",
     "procedure": "botox",
     "procedure_tag": "botox / dysport",
-    "query": "It's my first botox appointment — what should I tell my injector and what should I ask?",
-    "expected_sources": ["consult_questions", "who_its_for"],
+    "query": "It's my first botox appointment \u2014 what should I tell my injector and what should I ask?",
+    "expected_sources": [
+      "consult_questions",
+      "who_its_for"
+    ],
     "should_block": false
   },
   {
@@ -131,7 +159,10 @@
     "procedure": "tummy tuck",
     "procedure_tag": "tummy tuck",
     "query": "How do I know if I'm a good candidate for a tummy tuck? What will the surgeon assess?",
-    "expected_sources": ["who_its_for", "consult_questions"],
+    "expected_sources": [
+      "who_its_for",
+      "consult_questions"
+    ],
     "should_block": false
   },
   {
@@ -140,7 +171,10 @@
     "procedure": "coolsculpting",
     "procedure_tag": "coolsculpting",
     "query": "What makes someone a good candidate for CoolSculpting and what questions should I ask at my consultation?",
-    "expected_sources": ["who_its_for", "consult_questions"],
+    "expected_sources": [
+      "who_its_for",
+      "consult_questions"
+    ],
     "should_block": false
   },
   {
@@ -148,8 +182,11 @@
     "category": "consult_prep",
     "procedure": "blepharoplasty",
     "procedure_tag": "blepharoplasty",
-    "query": "I'm considering eyelid surgery — what should I ask at my blepharoplasty consultation?",
-    "expected_sources": ["consult_questions", "who_its_for"],
+    "query": "I'm considering eyelid surgery \u2014 what should I ask at my blepharoplasty consultation?",
+    "expected_sources": [
+      "consult_questions",
+      "who_its_for"
+    ],
     "should_block": false
   },
   {
@@ -158,7 +195,10 @@
     "procedure": "laser resurfacing",
     "procedure_tag": "laser resurfacing",
     "query": "What should I discuss with my provider about my skin type before laser resurfacing?",
-    "expected_sources": ["who_its_for", "consult_questions"],
+    "expected_sources": [
+      "who_its_for",
+      "consult_questions"
+    ],
     "should_block": false
   },
   {
@@ -167,7 +207,10 @@
     "procedure": "pdo thread lift",
     "procedure_tag": "pdo thread lift",
     "query": "What questions should I ask about how long PDO thread lift results last?",
-    "expected_sources": ["consult_questions", "description"],
+    "expected_sources": [
+      "consult_questions",
+      "description"
+    ],
     "should_block": false
   },
   {
@@ -176,7 +219,10 @@
     "procedure": "under eye filler",
     "procedure_tag": "under eye filler",
     "query": "What should I prepare to discuss with my injector before under-eye filler?",
-    "expected_sources": ["consult_questions", "who_its_for"],
+    "expected_sources": [
+      "consult_questions",
+      "who_its_for"
+    ],
     "should_block": false
   },
   {
@@ -185,7 +231,10 @@
     "procedure": "breast augmentation vs breast lift",
     "procedure_tag": null,
     "query": "What's the difference between a breast augmentation and a breast lift? Which one would be right for me?",
-    "expected_sources": ["description", "who_its_for"],
+    "expected_sources": [
+      "description",
+      "who_its_for"
+    ],
     "should_block": false
   },
   {
@@ -194,7 +243,10 @@
     "procedure": "coolsculpting vs emsculpt",
     "procedure_tag": null,
     "query": "Should I get CoolSculpting or Emsculpt for belly fat? What's the difference?",
-    "expected_sources": ["description", "who_its_for"],
+    "expected_sources": [
+      "description",
+      "who_its_for"
+    ],
     "should_block": false
   },
   {
@@ -203,7 +255,9 @@
     "procedure": "botox vs filler",
     "procedure_tag": null,
     "query": "What's the difference between Botox and dermal fillers for forehead lines?",
-    "expected_sources": ["description"],
+    "expected_sources": [
+      "description"
+    ],
     "should_block": false
   },
   {
@@ -211,8 +265,11 @@
     "category": "comparison",
     "procedure": "chemical peel vs laser resurfacing",
     "procedure_tag": null,
-    "query": "Which is better for uneven skin texture — a chemical peel or laser resurfacing?",
-    "expected_sources": ["description", "who_its_for"],
+    "query": "Which is better for uneven skin texture \u2014 a chemical peel or laser resurfacing?",
+    "expected_sources": [
+      "description",
+      "who_its_for"
+    ],
     "should_block": false
   },
   {
@@ -221,7 +278,10 @@
     "procedure": "ultherapy vs pdo thread lift",
     "procedure_tag": null,
     "query": "I want to lift my face without surgery. How does Ultherapy compare to PDO thread lift?",
-    "expected_sources": ["description", "who_its_for"],
+    "expected_sources": [
+      "description",
+      "who_its_for"
+    ],
     "should_block": false
   },
   {
